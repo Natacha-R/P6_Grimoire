@@ -1,21 +1,30 @@
-//************ Route pour la gestion des livres
+// ************ Route gestion des livres (création, modification, suppression, affichage et notation) **************//
 
 const express = require("express");
 const router = express.Router();
+const bookController = require("../controllers/bookController");
+const authMiddleware = require("../middleware/auth"); // Middleware pour vérifier le token JWT
+const multer = require("../middleware/multer-config"); // Pour la gestion des fichiers image
 
-// Route pour récupérer tous les livres
-router.get();
+// Récupérer tous les livres
+router.get("/", bookController.getAllBooks);
 
-// Route pour récupérer un livre par ID
-router.get();
+// Récupérer les 3 livres ayant la meilleure note moyenne
+router.get("/bestrating", bookController.getBestRatedBooks);
 
-// Route pour créer un nouveau livre (nécessite l'authentification)
-router.post();
+// Récupérer un livre spécifique par ID
+router.get("/:id", bookController.getOneBook);
 
-// Route pour mettre à jour un livre (nécessite l'authentification)
-router.put();
+// Ajouter un nouveau livre (image via multer)
+router.post("/", authMiddleware, multer, bookController.createBook);
 
-// Route pour supprimer un livre (nécessite l'authentification)
-router.delete();
+// Mettre à jour un livre par ID
+router.put("/:id", authMiddleware, multer, bookController.updateBook);
+
+// Supprimer un livre par ID
+router.delete("/:id", authMiddleware, bookController.deleteBook);
+
+// Noter un livre
+router.post("/:id/rating", authMiddleware, bookController.rateBook);
 
 module.exports = router;
