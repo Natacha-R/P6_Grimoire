@@ -1,6 +1,6 @@
 // ************ Contrôleur pour gérer les opérations sur les livres **************//
 
-const Book = require("../models/book");
+const Book = require("../models/Book");
 
 // Récupérer tous les livres
 exports.getAllBooks = (req, res, next) => {

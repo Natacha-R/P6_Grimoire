@@ -2,9 +2,9 @@
 
 const express = require("express");
 const router = express.Router();
-const bookController = require("../controllers/bookController");
-const authMiddleware = require("../middleware/auth"); // Middleware pour vérifier le token JWT
-const multer = require("../middleware/multer-config"); // Pour la gestion des fichiers image
+const bookController = require("../controllers/booksController");
+const authMiddleware = require("../middlewares/auth"); // Middleware pour vérifier le token JWT
+const multer = require("../middlewares/multer-config"); // Pour la gestion des fichiers image
 
 // Récupérer tous les livres
 router.get("/", bookController.getAllBooks);
