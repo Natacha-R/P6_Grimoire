@@ -58,8 +58,8 @@ exports.updateBook = (req, res, next) => {
   Book.findOne({ _id: req.params.id })
     .then((book) => {
       if (book.userId != req.auth.userId) {
-        return res.status(400).json({
-          message: "La personne modifiant le livre doit en être l'auteur.",
+        return res.status(403).json({
+          message: "unauthorized request",
         });
       }
 

@@ -29,7 +29,7 @@ exports.login = (req, res, next) => {
   User.findOne({ email: req.body.email })
     .then((user) => {
       if (!user) {
-        return res.status(403).json({ message: "unauthorized request" });
+        return res.status(401).json({ message: "Utilisateur non trouvé !" });
       }
       bcrypt
         .compare(req.body.password, user.password)
@@ -50,5 +50,3 @@ exports.login = (req, res, next) => {
     })
     .catch((error) => res.status(500).json({ error }));
 };
-
-// Si le user ID ne correspond pas, renvoyer : 403: unauthorized request
