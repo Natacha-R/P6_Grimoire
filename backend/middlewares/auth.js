@@ -9,11 +9,7 @@ module.exports = (req, res, next) => {
     req.auth = {
       userId: decodedToken.userId,
     };
-    if (req.body.userId && req.body.userId !== userId) {
-      throw "Invalid user ID";
-    } else {
-      next();
-    }
+    next();
   } catch (error) {
     res.status(401).json({ error: "Requête non authentifiée !" });
   }
