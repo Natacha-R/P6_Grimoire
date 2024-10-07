@@ -24,3 +24,5 @@ const storage = multer.diskStorage({
 });
 
 module.exports = multer({ storage }).single("image");
+
+// penser a optimiser les images envoyées par les utilisateurs

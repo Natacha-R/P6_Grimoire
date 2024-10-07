@@ -9,7 +9,7 @@ mongoose
   .connect(
     "mongodb+srv://natachaR:111190@cluster0.3wzt6.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
   )
-  .then(() => console.log("connexion reussi"))
+  .then(() => console.log("connexion ok"))
   .catch(() => console.log("connexion ko"));
 
 app.use(cors());

@@ -27,11 +27,14 @@ exports.getBestRatedBooks = (req, res, next) => {
 
 // Ajouter un livre
 exports.createBook = (req, res, next) => {
+  const bookJson = JSON.parse(req.body.book); //Récupération du body en format json pour supprimer les valeurs qui nous intéressent pas / ne sont pas au bon format
+  delete bookJson._id;
   const book = new Book({
-    ...req.body,
+    ...bookJson,
     userId: req.auth.userId, // Authentification nécessaire
-    averageRating: 0,
-    ratings: [],
+    imageUrl: `${req.protocol}://${req.get("host")}/images/${
+      req.file.filename
+    }`,
   });
   book
     .save()
