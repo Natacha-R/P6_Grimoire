@@ -105,8 +105,9 @@ exports.rateBook = (req, res, next) => {
   Book.findOne({ _id: req.params.id })
     .then((book) => {
       //Récupération des id d'utilisateurs ayant donnés une note
-      const userRating = book.ratings.map((rating) => rating.userId);
-      if (userRating.include(req.auth.userId)) {
+      const userRating = book.ratings.map((rating) => rating.userId); // extrait tous les userId des notes du livre dans un tableau
+      if (userRating.includes(req.auth.userId)) {
+        // methode pour vérifier si l'utilisateur connecté a déjà donné une note
         return res
           .status(400)
           .json({ message: "L'utilisateur connecté a déjà noté le livre." });
