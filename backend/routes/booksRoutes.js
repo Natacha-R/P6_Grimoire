@@ -4,7 +4,7 @@ const express = require("express");
 const router = express.Router();
 const bookController = require("../controllers/booksController");
 const authMiddleware = require("../middlewares/auth"); // Middleware pour vérifier le token JWT
-const multer = require("../middlewares/multer-config"); // Pour la gestion des fichiers image
+const { upload, optimizeImage } = require("../middlewares/multer-config"); // Importer upload et optimizeImage
 
 // Récupérer tous les livres
 router.get("/", bookController.getAllBooks);
@@ -15,11 +15,23 @@ router.get("/bestrating", bookController.getBestRatedBooks);
 // Récupérer un livre spécifique par ID
 router.get("/:id", bookController.getOneBook);
 
-// Ajouter un nouveau livre (image via multer)
-router.post("/", authMiddleware, multer, bookController.createBook);
+// Ajouter un nouveau livre (image via multer, puis optimisation avec sharp)
+router.post(
+  "/",
+  authMiddleware,
+  upload,
+  optimizeImage,
+  bookController.createBook
+);
 
-// Mettre à jour un livre par ID
-router.put("/:id", authMiddleware, multer, bookController.updateBook);
+// Mettre à jour un livre par ID (image via multer, puis optimisation avec sharp)
+router.put(
+  "/:id",
+  authMiddleware,
+  upload,
+  optimizeImage,
+  bookController.updateBook
+);
 
 // Supprimer un livre par ID
 router.delete("/:id", authMiddleware, bookController.deleteBook);

@@ -29,15 +29,17 @@ exports.getBestRatedBooks = (req, res, next) => {
 
 // Ajouter un livre
 exports.createBook = (req, res, next) => {
-  const bookJson = JSON.parse(req.body.book); //Récupération du body en format json pour supprimer les valeurs qui nous intéressent pas / ne sont pas au bon format
-  delete bookJson._id;
+  const bookJson = JSON.parse(req.body.book); // Récupération des données du livre
+  delete bookJson._id; // On s'assure de ne pas envoyer d'ID dans les données reçues
+
   const book = new Book({
     ...bookJson,
     userId: req.auth.userId, // Authentification nécessaire
     imageUrl: `${req.protocol}://${req.get("host")}/images/${
       req.file.filename
-    }`,
+    }`, // Utilisation de l'image optimisée
   });
+
   book
     .save()
     .then(() => res.status(201).json({ message: "Livre créé avec succès !" }))
@@ -51,21 +53,23 @@ exports.updateBook = (req, res, next) => {
         ...JSON.parse(req.body.book),
         imageUrl: `${req.protocol}://${req.get("host")}/images/${
           req.file.filename
-        }`,
+        }`, // Utilisation de la nouvelle image optimisée
       }
-    : { ...req.body };
+    : { ...req.body }; // Si aucune nouvelle image n'est envoyée, on utilise les autres données
 
+  // Recherche du livre à mettre à jour
   Book.findOne({ _id: req.params.id })
     .then((book) => {
+      // Vérification que l'utilisateur authentifié est bien le créateur du livre
       if (book.userId != req.auth.userId) {
         return res.status(403).json({
           message: "unauthorized request",
         });
       }
 
+      // Si une nouvelle image est envoyée, supprimer l'ancienne du serveur
       if (req.file) {
         const pathToRemove = path.join("images", path.basename(book.imageUrl));
-
         fs.unlink(pathToRemove, (error) => {
           if (error) {
             console.log(error);
@@ -73,12 +77,15 @@ exports.updateBook = (req, res, next) => {
         });
       }
 
+      // Mise à jour du livre dans la base de données
       Book.updateOne(
         { _id: req.params.id },
-        { ...bookJson, _id: req.params.id }
+        { ...bookJson, _id: req.params.id } // On préserve l'ID du livre
       )
         .then(() =>
-          res.status(200).json({ message: "Le livre a été modifié !" })
+          res
+            .status(200)
+            .json({ message: "Le livre a été modifié avec succès !" })
         )
         .catch((error) => res.status(400).json({ error }));
     })
@@ -87,8 +94,27 @@ exports.updateBook = (req, res, next) => {
 
 // Supprimer un livre
 exports.deleteBook = (req, res, next) => {
-  Book.deleteOne({ _id: req.params.id })
-    .then(() => res.status(200).json({ message: "Livre supprimé !" }))
+  Book.findOne({ _id: req.params.id })
+    .then((book) => {
+      if (book.userId != req.auth.userId) {
+        return res.status(403).json({ message: "Requête non autorisée" });
+      }
+
+      // Supprimer l'image du système de fichiers
+      const pathToRemove = path.join("images", path.basename(book.imageUrl));
+      fs.unlink(pathToRemove, (error) => {
+        if (error) {
+          console.log(error);
+        }
+      });
+
+      // Supprimer le livre de la base de données
+      Book.deleteOne({ _id: req.params.id })
+        .then(() =>
+          res.status(200).json({ message: "Livre supprimé avec succès !" })
+        )
+        .catch((error) => res.status(400).json({ error }));
+    })
     .catch((error) => res.status(400).json({ error }));
 };
 
