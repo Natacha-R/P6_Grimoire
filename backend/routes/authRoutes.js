@@ -1,15 +1,15 @@
-// ************ route Connexion d'un utilisateur **************//
+// ************ Routes Connexion d'un utilisateur **************//
 
-const express = require("express");
-const router = express.Router();
-const authController = require("../controllers/authController");
+// Importation des modules
+const express = require("express"); // framework utilisé pour gérer les routes et requêtes HTTP
+const router = express.Router(); // fonctionnalité d'Express qui permet de regrouper les routes liées dans un même module
+const authController = require("../controllers/authController"); // contrôleur qui contient les logiques pour les actions d'authentification
 
-// Inscription d'un utilisateur
+// Route inscription d'un utilisateur
 router.post("/signup", authController.signup);
 
-// Connexion d'un utilisateur
+// Route connexion d'un utilisateur
 router.post("/login", authController.login);
 
-module.exports = router;
-
-// Si le user ID ne correspond pas, renvoyer : 403: unauthorized request
+// Exportation du routeur
+module.exports = router; // permet à d'autres parties de l'application d'utiliser ces routes
