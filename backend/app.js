@@ -12,9 +12,7 @@ const app = express();
 
 // Connexion à MongoDB
 mongoose
-  .connect(
-    "mongodb+srv://natachaR:111190@cluster0.3wzt6.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-  )
+  .connect(process.env.MONGODB_URL)
   .then(() => console.log("connexion ok"))
   .catch(() => console.log("connexion ko"));
 
