@@ -37,99 +37,111 @@ exports.getBestRatedBooks = (req, res, next) => {
 
 // Ajouter un livre
 exports.createBook = (req, res, next) => {
-  const bookJson = JSON.parse(req.body.book); // Récupération des données du livre (objet JS)
+  // Le try catch permet de s'assurer que le parse du body de la requête ne fasse pas cracher le serveur au cas ou ça ne soit pas du JSON qui soit envoyé
+  try {
+    const bookJson = JSON.parse(req.body.book); // Récupération des données du livre (objet JS)
+    const userRatings = bookJson.ratings; //Récupère la liste des notes utilisateurs
+    if (userRatings.length != 1) {
+      // methode pour vérifier que le tableau des notes n'en contient qu'une (celle de l'auteur)
+      return res
+        .status(400)
+        .json({ message: "Nombre invalide de notes utilisateur" });
+    }
 
-  const userRatings = bookJson.ratings; //Récupère la liste des notes utilisateurs
-  if (userRatings.length != 1) {
-    // methode pour vérifier que le tableau des notes n'en contient qu'une (celle de l'auteur)
-    return res
-      .status(400)
-      .json({ message: "Nombre invalide de notes utilisateur" });
+    const userIdArray = userRatings.map((rating) => rating.userId);
+    if (!userIdArray.includes(req.auth.userId)) {
+      // methode pour vérifier que la note dans le tableau des notes utilisateurs provient bien de l'utilisateur connecté
+      return res
+        .status(400)
+        .json({ message: "Identifiant d'utilisateur incorrect" });
+    }
+
+    const ratingsArray = userRatings.map((rating) => rating.grade);
+    const userGrade = ratingsArray[0];
+    if (userGrade < 0 || userGrade > 5) {
+      // methode pour vérifier que la note est dans la plage attendue
+      return res.status(400).json({ message: "Note invalide" });
+    }
+
+    if (userGrade != bookJson.averageRating) {
+      // methode pour vérifier que la note moyenne est identique à celle de l'utilisateur
+      return res.status(400).json({ message: "Note moyenne incorrecte" });
+    }
+
+    delete bookJson._id; // Supprime l'ID du livre si jamais il a été envoyé par erreur
+    const book = new Book({
+      ...bookJson, // Crée une nouvelle instance du modèle Book avec les données contenues dans bookJson (décomposition ... qui copie toutes les propriétés)
+      userId: req.auth.userId, // lier le livre à l'utilisateur qui l'a créé (Authentification nécessaire)
+      imageUrl: `${req.protocol}://${req.get("host")}/images/${
+        req.file.filename
+      }`, // construit l'URL complète de l'image envoyée, basée sur l’hôte du serveur et le fichier téléchargé (req.file.filename est généré lors de l'upload de l'image)
+    });
+
+    book
+      .save() // Sauvegarde le livre dans la base de données MongoDB
+      .then(() => res.status(201).json({ message: "Livre créé avec succès !" }))
+      .catch((error) => res.status(400).json({ error }));
+  } catch (error) {
+    return res.status(400).json({ error });
   }
-
-  const userIdArray = userRatings.map((rating) => rating.userId);
-  if (!userIdArray.includes(req.auth.userId)) {
-    // methode pour vérifier que la note dans le tableau des notes utilisateurs provient bien de l'utilisateur connecté
-    return res
-      .status(400)
-      .json({ message: "Identifiant d'utilisateur incorrect" });
-  }
-
-  const ratingsArray = userRatings.map((rating) => rating.grade);
-  const userGrade = ratingsArray[0];
-  if (userGrade < 0 || userGrade > 5) {
-    // methode pour vérifier que la note est dans la plage attendue
-    return res.status(400).json({ message: "Note invalide" });
-  }
-
-  if (userGrade != bookJson.averageRating) {
-    // methode pour vérifier que la note moyenne est identique à celle de l'utilisateur
-    return res.status(400).json({ message: "Note moyenne incorrecte" });
-  }
-
-  delete bookJson._id; // Supprime l'ID du livre si jamais il a été envoyé par erreur
-  const book = new Book({
-    ...bookJson, // Crée une nouvelle instance du modèle Book avec les données contenues dans bookJson (décomposition ... qui copie toutes les propriétés)
-    userId: req.auth.userId, // lier le livre à l'utilisateur qui l'a créé (Authentification nécessaire)
-    imageUrl: `${req.protocol}://${req.get("host")}/images/${
-      req.file.filename
-    }`, // construit l'URL complète de l'image envoyée, basée sur l’hôte du serveur et le fichier téléchargé (req.file.filename est généré lors de l'upload de l'image)
-  });
-
-  book
-    .save() // Sauvegarde le livre dans la base de données MongoDB
-    .then(() => res.status(201).json({ message: "Livre créé avec succès !" }))
-    .catch((error) => res.status(400).json({ error }));
 };
 
 // Mettre à jour un livre
 exports.updateBook = (req, res, next) => {
-  const bookJson = req.file // si nouvelle image téléchargée
-    ? {
-        ...JSON.parse(req.body.book),
-        imageUrl: `${req.protocol}://${req.get("host")}/images/${
-          req.file.filename
-        }`, // nouveau chemin de la nouvelle image optimisée
-      }
-    : { ...req.body }; // Si aucune nouvelle image n'est envoyée, on utilise seulement les données envoyées dans req.body pour la maj
+  // Le try catch permet de s'assurer que le parse du body de la requête ne fasse pas cracher le serveur au cas ou ça ne soit pas du JSON qui soit envoyé
+  try {
+    const bookJson = req.file // si nouvelle image téléchargée
+      ? {
+          ...JSON.parse(req.body.book),
+          imageUrl: `${req.protocol}://${req.get("host")}/images/${
+            req.file.filename
+          }`, // nouveau chemin de la nouvelle image optimisée
+        }
+      : { ...req.body }; // Si aucune nouvelle image n'est envoyée, on utilise seulement les données envoyées dans req.body pour la maj
 
-  // Recherche du livre à mettre à jour
-  Book.findOne({ _id: req.params.id })
-    .then((book) => {
-      // Vérification que l'utilisateur authentifié est bien le créateur du livre
-      if (book.userId != req.auth.userId) {
-        return res.status(403).json({
-          message: "unauthorized request",
-        }); // Compare l'ID de l'utilisateur stocké dans le livre avec celui de l'utilisateur authentifié
-      }
+    // Recherche du livre à mettre à jour
+    Book.findOne({ _id: req.params.id })
+      .then((book) => {
+        // Vérification que l'utilisateur authentifié est bien le créateur du livre
+        if (book.userId != req.auth.userId) {
+          return res.status(403).json({
+            message: "unauthorized request",
+          }); // Compare l'ID de l'utilisateur stocké dans le livre avec celui de l'utilisateur authentifié
+        }
 
-      //Suppression des notes du json pour éviter que des notes avec des valeurs incorrectes soient ajoutées à la base de données ou que la note moyenne soit modifié avec une valeur incorrecte lors de la mise à jour du livre
-      delete bookJson.ratings;
-      delete bookJson.averageRating;
+        //Suppression des notes du json pour éviter que des notes avec des valeurs incorrectes soient ajoutées à la base de données ou que la note moyenne soit modifié avec une valeur incorrecte lors de la mise à jour du livre
+        delete bookJson.ratings;
+        delete bookJson.averageRating;
 
-      // Si une nouvelle image est envoyée, supprimer l'ancienne du serveur
-      if (req.file) {
-        const pathToRemove = path.join("images", path.basename(book.imageUrl));
-        fs.unlink(pathToRemove, (error) => {
-          if (error) {
-            console.log(error);
-          }
-        });
-      }
+        // Si une nouvelle image est envoyée, supprimer l'ancienne du serveur
+        if (req.file) {
+          const pathToRemove = path.join(
+            "images",
+            path.basename(book.imageUrl)
+          );
+          fs.unlink(pathToRemove, (error) => {
+            if (error) {
+              console.log(error);
+            }
+          });
+        }
 
-      // Mise à jour du livre dans la base de données
-      Book.updateOne(
-        { _id: req.params.id },
-        { ...bookJson, _id: req.params.id } // On préserve l'ID d'origine du livre
-      )
-        .then(() =>
-          res
-            .status(200)
-            .json({ message: "Le livre a été modifié avec succès !" })
+        // Mise à jour du livre dans la base de données
+        Book.updateOne(
+          { _id: req.params.id },
+          { ...bookJson, _id: req.params.id } // On préserve l'ID d'origine du livre
         )
-        .catch((error) => res.status(400).json({ error }));
-    })
-    .catch((error) => res.status(400).json({ error }));
+          .then(() =>
+            res
+              .status(200)
+              .json({ message: "Le livre a été modifié avec succès !" })
+          )
+          .catch((error) => res.status(400).json({ error }));
+      })
+      .catch((error) => res.status(400).json({ error }));
+  } catch (error) {
+    return res.status(400).json({ error });
+  }
 };
 
 // Supprimer un livre
