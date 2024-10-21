@@ -38,6 +38,40 @@ exports.getBestRatedBooks = (req, res, next) => {
 // Ajouter un livre
 exports.createBook = (req, res, next) => {
   const bookJson = JSON.parse(req.body.book); // Récupération des données du livre (objet JS)
+  console.log("book request : ", req.body);
+
+  const userRatings = bookJson.ratings; //Récupère la liste des notes utilisateurs
+  console.log("ratings : ", userRatings);
+  if (userRatings.length != 1) {
+    // methode pour vérifier que le tableau des notes n'en contient qu'une (celle de l'auteur)
+    return res
+      .status(400)
+      .json({ message: "Nombre invalide de notes utilisateur" });
+  }
+
+  console.log("connected id : ", req.auth.userId);
+  const userIdArray = userRatings.map((rating) => rating.userId);
+  if (!userIdArray.includes(req.auth.userId)) {
+    // methode pour vérifier que la note dans le tableau des notes utilisateurs provient bien de l'utilisateur connecté
+    return res
+      .status(400)
+      .json({ message: "Identifiant d'utilisateur incorrect" });
+  }
+
+  const ratingsArray = userRatings.map((rating) => rating.grade);
+  const userGrade = ratingsArray[0];
+  console.log("user grade : ", userGrade);
+  if (userGrade < 0 || userGrade > 5) {
+    // methode pour vérifier que la note est dans la plage attendue
+    return res.status(400).json({ message: "Note invalide" });
+  }
+
+  console.log("average rating : ", bookJson.averageRating);
+  if (userGrade != bookJson.averageRating) {
+    // methode pour vérifier que la note moyenne est identique à celle de l'utilisateur
+    return res.status(400).json({ message: "Note moyenne incorrecte" });
+  }
+
   delete bookJson._id; // Supprime l'ID du livre si jamais il a été envoyé par erreur
   const book = new Book({
     ...bookJson, // Crée une nouvelle instance du modèle Book avec les données contenues dans bookJson (décomposition ... qui copie toutes les propriétés)
