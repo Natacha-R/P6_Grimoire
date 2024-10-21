@@ -173,14 +173,15 @@ exports.rateBook = (req, res, next) => {
     .then((book) => {
       //Récupération des id d'utilisateurs ayant donnés une note
       const userRating = book.ratings.map((rating) => rating.userId); // crée un tableau contenant tous les userId des utilisateurs qui ont déjà noté le livre
-      if (userRating.includes(req.auth.userId)) {
+      const authenticatedUser = req.auth.userId; // Récupération de l'utilisateur connecté
+      if (userRating.includes(authenticatedUser)) {
         // methode pour vérifier si l'utilisateur connecté a déjà donné une note
         return res
           .status(400)
           .json({ message: "L'utilisateur connecté a déjà noté le livre." });
       }
       // création nouvelle note
-      const newRating = { userId, grade: rating }; // nouvel objet de notation (id utilisateur qui a donné la note / note fournie dans req.body.rating)
+      const newRating = { authenticatedUser, grade: rating }; // nouvel objet de notation (id utilisateur qui est connecté / note fournie dans req.body.rating)
       const newRatings = [...book.ratings, newRating]; // nouveau tableau avec notes existantes du livre (book.ratings) et nouvelle note (newRating)
       // Calcul de la nouvelle note moyenne
       const total = newRatings.reduce((acc, curr) => acc + curr.grade, 0); // reduce : calculer la somme des notes de tous les utilisateurs / acc : somme accumulée des notes / curr.grade : note actuelle dans chq itération / 0: valeur initiale de acc (commence à 0)
