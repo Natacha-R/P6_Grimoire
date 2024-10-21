@@ -15,9 +15,15 @@ exports.getAllBooks = (req, res, next) => {
 
 // Récupérer un livre par ID
 exports.getOneBook = (req, res, next) => {
-  Book.findOne({ _id: req.params.id }) // cherche un seul livre dans la base de donnée avec l'ID fourni par la requête (mongoose associe l'ID MongoDB à la clé _id)
-    .then((book) => res.status(200).json(book)) // si livre trouvé, contenu envoyé au client en JSON
-    .catch((error) => res.status(404).json({ error })); // si livre non trouvé, envoie réponse 404 et description erreur
+  Book.findOne({ _id: req.params.id }) // cherche un seul livre avec l'ID fourni par la requête
+    .then((book) => {
+      if (!book) {
+        // Si aucun livre trouvé (book est null)
+        return res.status(404).json({ message: "Livre non trouvé !" });
+      }
+      res.status(200).json(book); // Si un livre est trouvé, renvoyer le livre en JSON
+    })
+    .catch((error) => res.status(500).json({ error })); // Gérer les erreurs (ex: erreur de serveur ou format ID invalide)
 };
 
 // Récupérer les 3 livres avec la meilleure note
