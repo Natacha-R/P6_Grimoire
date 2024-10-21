@@ -38,10 +38,8 @@ exports.getBestRatedBooks = (req, res, next) => {
 // Ajouter un livre
 exports.createBook = (req, res, next) => {
   const bookJson = JSON.parse(req.body.book); // Récupération des données du livre (objet JS)
-  console.log("book request : ", req.body);
 
   const userRatings = bookJson.ratings; //Récupère la liste des notes utilisateurs
-  console.log("ratings : ", userRatings);
   if (userRatings.length != 1) {
     // methode pour vérifier que le tableau des notes n'en contient qu'une (celle de l'auteur)
     return res
@@ -49,7 +47,6 @@ exports.createBook = (req, res, next) => {
       .json({ message: "Nombre invalide de notes utilisateur" });
   }
 
-  console.log("connected id : ", req.auth.userId);
   const userIdArray = userRatings.map((rating) => rating.userId);
   if (!userIdArray.includes(req.auth.userId)) {
     // methode pour vérifier que la note dans le tableau des notes utilisateurs provient bien de l'utilisateur connecté
@@ -60,13 +57,11 @@ exports.createBook = (req, res, next) => {
 
   const ratingsArray = userRatings.map((rating) => rating.grade);
   const userGrade = ratingsArray[0];
-  console.log("user grade : ", userGrade);
   if (userGrade < 0 || userGrade > 5) {
     // methode pour vérifier que la note est dans la plage attendue
     return res.status(400).json({ message: "Note invalide" });
   }
 
-  console.log("average rating : ", bookJson.averageRating);
   if (userGrade != bookJson.averageRating) {
     // methode pour vérifier que la note moyenne est identique à celle de l'utilisateur
     return res.status(400).json({ message: "Note moyenne incorrecte" });
@@ -107,6 +102,10 @@ exports.updateBook = (req, res, next) => {
           message: "unauthorized request",
         }); // Compare l'ID de l'utilisateur stocké dans le livre avec celui de l'utilisateur authentifié
       }
+
+      //Suppression des notes du json pour éviter que des notes avec des valeurs incorrectes soient ajoutées à la base de données ou que la note moyenne soit modifié avec une valeur incorrecte lors de la mise à jour du livre
+      delete bookJson.ratings;
+      delete bookJson.averageRating;
 
       // Si une nouvelle image est envoyée, supprimer l'ancienne du serveur
       if (req.file) {
