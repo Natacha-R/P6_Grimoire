@@ -21,13 +21,22 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 }, // Limiter la taille des fichiers à 5MB
 }).single("image"); // Champ de formulaire pour l'image
 
+// Fonction pour nettoyer le nom du fichier, en supprimant les caractères problématiques
+const sanitizeFilename = (filename) => {
+  return filename.replace(/[\/\\?%*:|"<>]/g, "_"); // Remplacer les caractères interdits par des underscores
+};
+
 // Middleware pour redimensionner et optimiser les images
 const optimizeImage = (req, res, next) => {
   if (!req.file) {
     return next(); // Si aucune image n'est fournie, passer à l'étape suivante
   }
 
-  const originalName = req.file.originalname.split(" ").join("_"); // récupère le nom original du fichier envoyé
+  // Nettoyer le nom original du fichier
+  const originalName = sanitizeFilename(
+    req.file.originalname.split(" ").join("_")
+  ); // Remplace les espaces par des underscores, et nettoie les caractères problématiques
+
   const filenameArray = originalName.split(".");
   filenameArray.pop(); // Supprimer l'extension originale du fichier (comme .jpg ou .png)
   const filenameWithoutExtension = filenameArray.join("_"); // Le reste du nom du fichier est reconstruit
@@ -35,7 +44,7 @@ const optimizeImage = (req, res, next) => {
   // Récupérer l'extension en fonction du type MIME
   const extension = MIME_TYPE[req.file.mimetype] || "webp"; // Par défaut, utiliser "webp"
   const optimizedFilename =
-    filenameWithoutExtension + Date.now() + "." + extension; // génère un nom de fichier unique en concaténant le nom original avec la date actuelle
+    filenameWithoutExtension + "_" + Date.now() + "." + extension; // génère un nom de fichier unique en concaténant le nom original avec la date actuelle
   const outputPath = path.join(__dirname, "../images", optimizedFilename); // créer un chemin absolu vers le répertoire images, où le fichier optimisé sera sauvegardé
 
   // Utilisation de sharp pour redimensionner et compresser l'image
