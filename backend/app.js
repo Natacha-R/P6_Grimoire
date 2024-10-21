@@ -5,7 +5,7 @@ const express = require("express"); // framework qui permet de créer des serveu
 const path = require("path"); // module intégré à Node.js qui permet de gérer les chemins de fichiers
 const cors = require("cors"); // middleware qui permet de configurer les CORS (permet au navigateur d'accéder à des ressources sur des serveurs)
 const mongoose = require("mongoose"); // bibliothèque qui facilite les interactions avec MongoDB (base de données NoSQL)
-require("dotenv").config(); //  permet de charger des variables d'environnement depuis un fichier .env (garder des informations sensibles)
+require("dotenv").config(); // charger variables d'environnement depuis le fichier .env
 
 // Création de l'application Express
 const app = express();

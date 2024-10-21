@@ -4,6 +4,7 @@
 const bcrypt = require("bcrypt"); //  librairie utilisée pour hasher les mots de passe avant de les enregistrer dans la base de données
 const jwt = require("jsonwebtoken"); // Utilisé pour générer des tokens d'authentification après la connexion
 const User = require("../models/User"); // modèle de la collection User dans la base de données MongoDB (représente les utilisateurs du système avec leurs emails et mots de passe)
+require("dotenv").config(); // Charger variables d'environnement depuis le fichier .env
 
 // Inscription d'un nouveau compte utilisateur (méthode signup)
 exports.signup = (req, res, next) => {
@@ -43,9 +44,13 @@ exports.login = (req, res, next) => {
           }
           res.status(200).json({
             userId: user._id,
-            token: jwt.sign({ userId: user._id }, "RANDOM_TOKEN_SECRET", {
-              expiresIn: "24h",
-            }), // Si le mot de passe est correct, un token JWT est généré pour cet utilisateur pendant 24H
+            token: jwt.sign(
+              { userId: user._id },
+              process.env.RANDOM_TOKEN_SECRET,
+              {
+                expiresIn: "24h",
+              }
+            ), // Si le mot de passe est correct, un token JWT est généré pour cet utilisateur pendant 24H
           });
         })
         .catch((error) => res.status(500).json({ error }));
