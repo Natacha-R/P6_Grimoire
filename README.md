@@ -2,9 +2,9 @@
 
 ## Comment lancer le projet ? 
 
-commande `npm install` pour installer les dépendances
-commande `npm start` pour lancer le projet
+# commande `npm install` pour installer les dépendances
+# commande `npm start` pour lancer le projet
 _______________________________________________________________
 
-http://localhost:3000 (adresse de la partie front)
-http://localhost:4000 (adresse de la partie back)
+# http://localhost:3000 (adresse de la partie front)
+# http://localhost:4000 (adresse de la partie back)
