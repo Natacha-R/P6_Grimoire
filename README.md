@@ -1,10 +1,10 @@
 # Mon vieux Grimoire
 
-
 ## Comment lancer le projet ? 
 
-### Avec npm
+commande `npm install` pour installer les dépendances
+commande `npm start` pour lancer le projet
+_______________________________________________________________
 
-Faites la commande `npm install` pour installer les dépendances puis `npm start` pour lancer le projet. 
-
-Le projet a été testé sur node 19. 
+http://localhost:3000 (adresse de la partie front)
+http://localhost:4000 (adresse de la partie back)
