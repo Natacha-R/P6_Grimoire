@@ -10,7 +10,7 @@
 
   - Voici les 3 variables présentes dans le fichier .env :
 
-    - MONGODB_URL=mongodb+srv://username:password@cluster0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+    - MONGODB_URL=MONGODB_URL=mongodb+srv://username:password@cluster0.3wzt6.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
     - RANDOM_TOKEN_SECRET=your_random_token_secret
     - PORT=4000
 
