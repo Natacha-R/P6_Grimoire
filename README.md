@@ -10,9 +10,9 @@
 
   - Voici les 3 variables présentes dans le fichier .env :
 
-  MONGODB_URL=mongodb+srv://username:password@cluster0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
-  RANDOM_TOKEN_SECRET=your_random_token_secret
-  PORT=4000
+    - MONGODB_URL=mongodb+srv://username:password@cluster0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+    - RANDOM_TOKEN_SECRET=your_random_token_secret
+    - PORT=4000
 
 - installez les dépendances avec la commande : npm install
 
