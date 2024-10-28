@@ -4,9 +4,10 @@
 const express = require("express"); // framework utilisé pour gérer les routes et requêtes HTTP
 const router = express.Router(); // fonctionnalité d'Express qui permet de regrouper les routes liées dans un même module
 const authController = require("../controllers/authController"); // contrôleur qui contient les logiques pour les actions d'authentification
+const validation = require("../middlewares/validation"); // Import du middleware de validation
 
 // Route inscription d'un utilisateur
-router.post("/signup", authController.signup);
+router.post("/signup", validation.validateSignup, authController.signup);
 
 // Route connexion d'un utilisateur
 router.post("/login", authController.login);

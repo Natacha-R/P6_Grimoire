@@ -9,22 +9,24 @@ require("dotenv").config(); // Charger variables d'environnement depuis le fichi
 // Inscription d'un nouveau compte utilisateur (méthode signup)
 exports.signup = (req, res, next) => {
   console.log(req.body); // sert à afficher les données reçues (utile pour le débogage)
-  bcrypt
-    .hash(req.body.password, 10) // Le mot de passe fourni est hashé avec bcrypt (10 indique le nombre de "salt rounds", ce qui rend le hash plus sécurisé)
-    .then((hash) => {
-      // Création de l'utilisateur avec email et password
-      const user = new User({
-        email: req.body.email,
-        password: hash,
-      });
-      user
-        .save() // utilisateur est enregistré dans la base de données avec user.save()
-        .then(() =>
-          res.status(201).json({ message: "Utilisateur créé avec succès !" })
-        )
-        .catch((error) => res.status(400).json({ error })); // message d'erreur (ex : email déjà utilisé)
-    })
-    .catch((error) => res.status(500).json({ error }));
+  // Création de l'utilisateur avec email et mot de passe (en clair)
+  const user = new User({
+    email: req.body.email,
+    password: req.body.password, // Le modèle User va hasher le mot de passe automatiquement
+  });
+
+  user
+    .save() // utilisateur est enregistré dans la base de données avec user.save()
+    .then(() =>
+      res.status(201).json({ message: "Utilisateur créé avec succès !" })
+    )
+    .catch((error) => {
+      if (error.name === "ValidationError") {
+        res.status(400).json({ error }); // Erreur 400 pour validation
+      } else {
+        res.status(500).json({ error }); // Erreur 500 pour autres erreurs
+      }
+    });
 };
 
 // Connexion d'un utilisateur (login)
